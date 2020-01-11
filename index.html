@@ -78,14 +78,14 @@
 
 	</script>
 	<script src="js/three.js"></script>
+	<script src="js/TrackballControls.js"></script>
 	<script type="module">
-		// import * as THREE from './js/three.js';
 
 		// import Stats from './js/stats.module.js';
 		// import { GUI } from './js/dat.gui.module.js';
 
 		// var container, stats;
-		var container;
+		var container, controls;
 
 		var camera, scene, renderer;
 
@@ -203,6 +203,12 @@
 
 			window.addEventListener( 'resize', onWindowResize, false );
 
+			controls = new THREE.TrackballControls( camera, renderer.domElement);
+			controls.rotateSpeed = 1.0;
+			controls.zoomSpeed = 0.05;
+			controls.panSpeed = 0.1;
+			controls.keys = [ 65, 83, 68 ];
+
 		}
 
 		function onWindowResize() {
@@ -219,6 +225,7 @@
 		function animate() {
 
 			requestAnimationFrame( animate );
+			controls.update();
 
 			render();
 			// stats.update();
@@ -234,7 +241,6 @@
 			object.rotation.y = time * 0.0005;
 			object.material.uniforms[ "time" ].value = time * 0.005;
 			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.05 );
-
 			renderer.render( scene, camera );
 
 		}
