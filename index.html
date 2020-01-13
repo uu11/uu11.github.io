@@ -253,7 +253,7 @@
 
 			object.rotation.y = time * 0.00015;
 			object.material.uniforms[ "time" ].value = time * 0.006;
-			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 );
+			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 + 1.2 );
 			renderer.render( scene, camera );
 
 		}
