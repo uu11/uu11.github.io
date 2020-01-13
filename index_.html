@@ -23,7 +23,7 @@
 	<div id="container"></div>
 	<div id="info">
 		<!-- <a href="https://tomhsiao1260.github.io/" target="_blank" rel="noopener">HSIAO YAO</a> -->
-		<a href="./index_.html" target="_parent" rel="noopener">HSIAO YAO</a>
+		<a href="./index.html" target="_parent" rel="noopener">HSIAO YAO</a>
 		<div id="notSupported" style="display:none">Sorry your graphics card + browser does not support hardware instancing</div>
 	</div>
 
@@ -36,7 +36,6 @@
 		uniform mat4 projectionMatrix;
 
 		attribute vec3 position;
-		attribute float scale;
 		attribute vec3 offset;
 		attribute vec4 color;
 		attribute vec4 orientationStart;
@@ -47,7 +46,7 @@
 
 		void main(){
 
-			vPosition = offset * max( abs( (2.38 * scale - 1.38) * sineTime * 2.0 + 1.0 ), 0.5 ) + scale * position;
+			vPosition = offset * max( abs( sineTime * 2.0 + 1.0 ), 0.5 ) + position;
 			vec4 orientation = normalize( mix( orientationStart, orientationEnd, sineTime ) );
 			vec3 vcV = cross( orientation.xyz, vPosition );
 			vPosition = vcV * ( 2.0 * orientation.w ) + ( cross( orientation.xyz, vcV ) * 2.0 + vPosition );
@@ -107,10 +106,9 @@
 
 			var vector = new THREE.Vector4();
 
-			var instances = 1500;
+			var instances = 300;
 
 			var positions = [];
-			var scale = [];
 			var offsets = [];
 			var colors = [];
 			var orientationsStart = [];
@@ -125,20 +123,13 @@
 
 			for ( var i = 0; i < instances; i ++ ) {
 
-				if (i<0){
-					scale.push(1);
-					// colors.push( Math.random(), Math.random(), Math.random(), Math.random() );
-					colors.push( 0.2+0.8*Math.random(), 0.2+0.8*Math.random(), 1, Math.random() );
-				}
-				else{
-					scale.push(0.16);
-					colors.push( 0.7+0.3*Math.random(), 0.7+0.3*Math.random(), 1, Math.random() );
-				}
-
 				// offsets
 
 				offsets.push( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
 
+				// colors
+
+				colors.push( Math.random(), Math.random(), Math.random(), Math.random() );
 
 				// orientation start
 
@@ -156,12 +147,10 @@
 
 			}
 
-
 			var geometry = new THREE.InstancedBufferGeometry();
 			geometry.maxInstancedCount = instances; // set so its initalized for dat.GUI, will be set in first draw otherwise
 
 			geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-			geometry.setAttribute( 'scale', new THREE.InstancedBufferAttribute( new Float32Array( scale ), 1 ) );
 
 			geometry.setAttribute( 'offset', new THREE.InstancedBufferAttribute( new Float32Array( offsets ), 3 ) );
 			geometry.setAttribute( 'color', new THREE.InstancedBufferAttribute( new Float32Array( colors ), 4 ) );
@@ -251,9 +240,9 @@
 
 			var object = scene.children[ 0 ];
 
-			object.rotation.y = time * 0.00015;
-			object.material.uniforms[ "time" ].value = time * 0.006;
-			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 );
+			object.rotation.y = time * 0.0005;
+			object.material.uniforms[ "time" ].value = time * 0.005;
+			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.05 );
 			renderer.render( scene, camera );
 
 		}
