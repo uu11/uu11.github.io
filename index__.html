@@ -23,7 +23,7 @@
 	<div id="container"></div>
 	<div id="info">
 		<!-- <a href="https://tomhsiao1260.github.io/" target="_blank" rel="noopener">HSIAO YAO</a> -->
-		<a href="./index__.html" target="_parent" rel="noopener">HSIAO YAO</a>
+		<a href="./index.html" target="_parent" rel="noopener">HSIAO YAO</a>
 		<div id="notSupported" style="display:none">Sorry your graphics card + browser does not support hardware instancing</div>
 	</div>
 
@@ -106,7 +106,7 @@
 
 			var vector = new THREE.Vector4();
 
-			var instances = 1000;
+			var instances = 300;
 
 			var positions = [];
 			var offsets = [];
@@ -114,9 +114,9 @@
 			var orientationsStart = [];
 			var orientationsEnd = [];
 
-			positions.push( 0.01, - 0.01, 0 );
-			positions.push( - 0.01, 0.01, 0 );
-			positions.push( 0, 0, 0.01 );
+			positions.push( 0.025, - 0.025, 0 );
+			positions.push( - 0.025, 0.025, 0 );
+			positions.push( 0, 0, 0.025 );
 
 
 			// instanced attributes
@@ -129,7 +129,7 @@
 
 				// colors
 
-				colors.push( Math.random(), Math.random(), 1, Math.random() );
+				colors.push( Math.random(), Math.random(), Math.random(), Math.random() );
 
 				// orientation start
 
@@ -157,14 +157,13 @@
 			geometry.setAttribute( 'orientationStart', new THREE.InstancedBufferAttribute( new Float32Array( orientationsStart ), 4 ) );
 			geometry.setAttribute( 'orientationEnd', new THREE.InstancedBufferAttribute( new Float32Array( orientationsEnd ), 4 ) );
 
-
 			// material
 
 			var material = new THREE.RawShaderMaterial( {
 
 				uniforms: {
-					time: { value: 1.0 },
-					sineTime: { value: 1.0 }
+					"time": { value: 1.0 },
+					"sineTime": { value: 1.0 }
 				},
 				vertexShader: document.getElementById( 'vertexShader' ).textContent,
 				fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
@@ -241,9 +240,9 @@
 
 			var object = scene.children[ 0 ];
 
-			object.rotation.y = time * 0.00016;
-			object.material.uniforms[ "time" ].value = time * 0.002;
-			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 + 4.5 );
+			object.rotation.y = time * 0.0005;
+			object.material.uniforms[ "time" ].value = time * 0.005;
+			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.05 );
 			renderer.render( scene, camera );
 
 		}

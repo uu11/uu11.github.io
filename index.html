@@ -1,255 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<title>Hsiao Yao</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<link type="text/css" rel="stylesheet" href="main.css">
-	<style>
-		a {
-			color: #ffffff;
-		}
-		#notSupported {
-			width: 50%;
-			margin: auto;
-			background-color: #f00;
-			margin-top: 20px;
-			padding: 10px;
-		}
-	</style>
-</head>
-<body>
-
-	<div id="container"></div>
-	<div id="info">
+	<head>
+		<title>three.js webgl - buffer geometry custom attributes - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<div id="container"></div>
+		<div id="info">
 		<!-- <a href="https://tomhsiao1260.github.io/" target="_blank" rel="noopener">HSIAO YAO</a> -->
-		<a href="./index_.html" target="_parent" rel="noopener">HSIAO YAO</a>
-		<div id="notSupported" style="display:none">Sorry your graphics card + browser does not support hardware instancing</div>
-	</div>
+			<a href="./index_.html" target="_parent" rel="noopener">HSIAO YAO</a>
+			<div id="notSupported" style="display:none">Sorry your graphics card + browser does not support hardware instancing</div>
+		</div>
 
-	<script id="vertexShader" type="x-shader/x-vertex">
-		precision highp float;
+		<script type="x-shader/x-vertex" id="vertexshader">
 
-		uniform float sineTime;
+			attribute float size;
 
-		uniform mat4 modelViewMatrix;
-		uniform mat4 projectionMatrix;
+			uniform float sineTime;
 
-		attribute vec3 position;
-		attribute vec3 offset;
-		attribute vec4 color;
-		attribute vec4 orientationStart;
-		attribute vec4 orientationEnd;
+			varying vec3 vColor;
 
-		varying vec3 vPosition;
-		varying vec4 vColor;
+			void main() {
 
-		void main(){
+				vColor = color;
 
-			vPosition = offset * max( abs( sineTime * 2.0 + 1.0 ), 0.5 ) + position;
-			vec4 orientation = normalize( mix( orientationStart, orientationEnd, sineTime ) );
-			vec3 vcV = cross( orientation.xyz, vPosition );
-			vPosition = vcV * ( 2.0 * orientation.w ) + ( cross( orientation.xyz, vcV ) * 2.0 + vPosition );
+				vec4 mvPosition = modelViewMatrix * vec4( sineTime * position, 1.0 );
 
-			vColor = color;
+				gl_PointSize = size * ( 300.0 / -mvPosition.z );
 
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( vPosition, 1.0 );
-
-		}
-
-	</script>
-
-	<script id="fragmentShader" type="x-shader/x-fragment">
-
-		precision highp float;
-
-		uniform float time;
-
-		varying vec3 vPosition;
-		varying vec4 vColor;
-
-		void main() {
-
-			vec4 color = vec4( vColor );
-			color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
-
-			gl_FragColor = color;
-
-		}
-
-	</script>
-	<script src="js/three.js"></script>
-	<script src="js/TrackballControls.js"></script>
-	<script type="module">
-
-		// import Stats from './js/stats.module.js';
-		// import { GUI } from './js/dat.gui.module.js';
-
-		// var container, stats;
-		var container, controls, uniforms;
-
-		var camera, scene, renderer;
-
-		init();
-		animate();
-
-		function init() {
-
-			container = document.getElementById( 'container' );
-
-			camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10 );
-			camera.position.z = 2;
-
-			scene = new THREE.Scene();
-
-			// geometry
-
-			var vector = new THREE.Vector4();
-
-			var instances = 1000;
-
-			var positions = [];
-			var offsets = [];
-			var colors = [];
-			var orientationsStart = [];
-			var orientationsEnd = [];
-
-			positions.push( 0.01, - 0.01, 0 );
-			positions.push( - 0.01, 0.01, 0 );
-			positions.push( 0, 0, 0.01 );
-
-
-			// instanced attributes
-
-			for ( var i = 0; i < instances; i ++ ) {
-
-				// offsets
-
-				offsets.push( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
-
-				// colors
-
-				colors.push( Math.random(), Math.random(), 1, Math.random() );
-
-				// orientation start
-
-				vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
-				vector.normalize();
-
-				orientationsStart.push( vector.x, vector.y, vector.z, vector.w );
-
-				// orientation end
-
-				vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
-				vector.normalize();
-
-				orientationsEnd.push( vector.x, vector.y, vector.z, vector.w );
+				gl_Position = projectionMatrix * mvPosition;
 
 			}
 
-			var geometry = new THREE.InstancedBufferGeometry();
-			geometry.maxInstancedCount = instances; // set so its initalized for dat.GUI, will be set in first draw otherwise
+		</script>
 
-			geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+		<script type="x-shader/x-fragment" id="fragmentshader">
 
-			geometry.setAttribute( 'offset', new THREE.InstancedBufferAttribute( new Float32Array( offsets ), 3 ) );
-			geometry.setAttribute( 'color', new THREE.InstancedBufferAttribute( new Float32Array( colors ), 4 ) );
-			geometry.setAttribute( 'orientationStart', new THREE.InstancedBufferAttribute( new Float32Array( orientationsStart ), 4 ) );
-			geometry.setAttribute( 'orientationEnd', new THREE.InstancedBufferAttribute( new Float32Array( orientationsEnd ), 4 ) );
+			uniform sampler2D pointTexture;
 
+			varying vec3 vColor;
 
-			// material
+			void main() {
 
-			var material = new THREE.RawShaderMaterial( {
+				gl_FragColor = vec4( vColor, 1.0 );
 
-				uniforms: {
-					"time": { value: 1.0 },
-					"sineTime": { value: 1.0 }
-				},
-				vertexShader: document.getElementById( 'vertexShader' ).textContent,
-				fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-				side: THREE.DoubleSide,
-				transparent: true
-
-			} );
-
-			//
-
-			var mesh = new THREE.Mesh( geometry, material );
-			scene.add( mesh );
-
-			//
-
-			renderer = new THREE.WebGLRenderer();
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			container.appendChild( renderer.domElement );
-
-			if ( renderer.extensions.get( 'ANGLE_instanced_arrays' ) === null ) {
-
-				document.getElementById( 'notSupported' ).style.display = '';
-				return;
+				gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
 
 			}
 
-			//
+		</script>
+		<script src="js/three.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script type="module">
 
-			// var gui = new GUI( { width: 350 } );
-			// gui.add( geometry, 'maxInstancedCount', 0, instances );
+			var renderer, scene, camera, controls;
 
-			//
+			var particleSystem, geometry;
 
-			// stats = new Stats();
-			// container.appendChild( stats.dom );
+			var particles = 1000;
 
-			//
+			init();
+			animate();
 
-			window.addEventListener( 'resize', onWindowResize, false );
+			function init() {
 
-			controls = new THREE.TrackballControls( camera, renderer.domElement);
-			controls.rotateSpeed = 1.0;
-			controls.zoomSpeed = 0.05;
-			controls.panSpeed = 0.1;
-			controls.keys = [ 65, 83, 68 ];
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 100, 10000 );
+				camera.position.z = 300;
 
-		}
+				scene = new THREE.Scene();
 
-		function onWindowResize() {
+				var shaderMaterial = new THREE.ShaderMaterial( {
 
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
+					uniforms: {
+						time: { value: 1.0 },
+						sineTime: { value: 1.0 },
+						pointTexture: { value: new THREE.TextureLoader().load( "./spot.png" ) }
+					},
+					vertexShader: document.getElementById( 'vertexshader' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
 
-			renderer.setSize( window.innerWidth, window.innerHeight );
+					blending: THREE.AdditiveBlending,
+					depthTest: false,
+					transparent: true,
+					vertexColors: true
 
-		}
+				} );
 
-		//
 
-		function animate() {
+				geometry = new THREE.BufferGeometry();
 
-			requestAnimationFrame( animate );
-			controls.update();
+				var positions = [];
+				var offsets = [];
+				var colors = [];
+				var sizes = [];
 
-			render();
-			// stats.update();
+				var color = new THREE.Color();
 
-		}
+				for ( var i = 0; i < particles; i ++ ) {
 
-		function render() {
+					var radius = (1 - Math.random() * Math.random()) * 200;
+					var theta = Math.random() * Math.PI * 2;
+					var phi = Math.random() * Math.PI;
 
-			var time = performance.now();
+					positions.push( radius * Math.sin(phi) * Math.cos(theta) );
+					positions.push( radius * Math.sin(phi) * Math.sin(theta) );
+					positions.push( radius * Math.cos(phi) );
 
-			var object = scene.children[ 0 ];
+					offsets.push( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
 
-			object.rotation.y = time * 0.00016;
-			object.material.uniforms[ "time" ].value = time * 0.002;
-			object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 + 4.5 );
-			renderer.render( scene, camera );
+					color.setHSL( i / particles, 1.0, 0.5 );
 
-		}
+					colors.push( Math.random(), Math.random(), 1 );
 
-	</script>
+					sizes.push( 20 );
+
+				}
+
+				geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+				geometry.setAttribute( 'offset', new THREE.Float32BufferAttribute( offsets, 3 ) );
+				geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+				geometry.setAttribute( 'size', new THREE.Float32BufferAttribute( sizes, 1 ).setUsage( THREE.DynamicDrawUsage ) );
+
+				particleSystem = new THREE.Points( geometry, shaderMaterial );
+
+				scene.add( particleSystem );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				var container = document.getElementById( 'container' );
+				container.appendChild( renderer.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement);
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 0.05;
+				controls.panSpeed = 0.1;
+				controls.keys = [ 65, 83, 68 ];
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				controls.update();
+
+				render();
+
+			}
+
+			function render() {
+
+				var time = performance.now();
+
+				var object = scene.children[ 0 ];
+
+				object.rotation.y = time * 0.00005;
+				object.material.uniforms[ "time" ].value = time * 0.004;
+				object.material.uniforms[ "sineTime" ].value = Math.sin( object.material.uniforms[ "time" ].value * 0.02 );
+
+				// var time = Date.now() * 0.005;
+
+				// particleSystem.rotation.z = 0.01 * time;
+
+				var sizes = geometry.attributes.size.array;
+
+				for ( var i = 0; i < particles; i ++ ) {
+
+					sizes[ i ] = 10 * ( 1 + Math.sin( 0.1 * i + 0.003*time ) );
+					// sizes[ i ] = 20;
+
+				}
+
+				geometry.attributes.size.needsUpdate = true;
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
 
 </body>
-
 </html>
